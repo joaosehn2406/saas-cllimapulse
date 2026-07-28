@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+﻿package com.climapulse.jceco.integration.inpe;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +23,9 @@ public class InpeHotspotImporter {
     }
 
     @Transactional
-    public void importFile(InpeCsvFile file) {
+    public InpeHotspotFileImportResult importFile(InpeCsvFile file) {
         if (inpeImportRepository.existsById(file.filename())) {
-            return;
+            return InpeHotspotFileImportResult.skipped(file.filename());
         }
 
         var hotspots = parser.parse(
@@ -44,5 +44,7 @@ public class InpeHotspotImporter {
                 .toList();
 
         hotspotRepository.saveAll(hotspotEntities);
+
+        return InpeHotspotFileImportResult.imported(file.filename(), hotspotEntities.size());
     }
 }

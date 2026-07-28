@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+﻿package com.climapulse.jceco.integration.inpe;
 
 import jakarta.persistence.*;
 
@@ -27,6 +27,17 @@ public class HotspotEntity {
 
     @Column(name = "observed_at", nullable = false)
     private Instant observedAt;
+
+    @Column(
+            name = "created_at",
+            nullable = false,
+            insertable = false,
+            updatable = false
+    )
+    private Instant createdAt;
+
+    protected HotspotEntity() {
+    }
 
     HotspotEntity(String sourceFilename, InpeHotspot hotspot) {
         this.sourceFilename = sourceFilename;

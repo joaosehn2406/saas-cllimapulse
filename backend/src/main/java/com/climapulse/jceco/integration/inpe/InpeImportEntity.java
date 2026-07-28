@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+﻿package com.climapulse.jceco.integration.inpe;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +22,9 @@ class InpeImportEntity {
             updatable = false
     )
     private Instant importedAt;
+
+    protected InpeImportEntity() {
+    }
 
     InpeImportEntity(String filename) {
         this.filename = filename;
