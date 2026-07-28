@@ -1,6 +1,12 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.persistence;
 
-import jakarta.persistence.*;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -39,7 +45,7 @@ public class HotspotEntity {
     protected HotspotEntity() {
     }
 
-    HotspotEntity(String sourceFilename, InpeHotspot hotspot) {
+    public HotspotEntity(String sourceFilename, InpeHotspot hotspot) {
         this.sourceFilename = sourceFilename;
         this.latitude = hotspot.latitude();
         this.longitude = hotspot.longitude();

@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.client;
 
 import org.junit.jupiter.api.Test;
 

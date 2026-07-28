@@ -1,5 +1,12 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.importer;
 
+import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
+import com.climapulse.jceco.integration.inpe.parser.InpeHotspotCsvParser;
+import com.climapulse.jceco.integration.inpe.persistence.HotspotEntity;
+import com.climapulse.jceco.integration.inpe.persistence.HotspotRepository;
+import com.climapulse.jceco.integration.inpe.persistence.InpeHotspotImportEntity;
+import com.climapulse.jceco.integration.inpe.persistence.InpeHotspotImportRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,23 +25,23 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class InpeHotspotImporterTest {
+class InpeHotspotFileImporterServiceTest {
 
     @Mock
     private InpeHotspotCsvParser parser;
 
     @Mock
-    private InpeImportRepository inpeImportRepository;
+    private InpeHotspotImportRepository inpeHotspotImportRepository;
 
     @Mock
     private HotspotRepository hotspotRepository;
 
     @Test
     void shouldSkipAlreadyImportedFile() {
-        var importer = new InpeHotspotImporter(parser, inpeImportRepository, hotspotRepository);
-        var file = new InpeCsvFile("focos_10min_20260727_1200.csv", "lat,lon,satelite,data\n");
+        var importer = new InpeHotspotFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
+        var file = new InpeHotspotCsvFile("focos_10min_20260727_1200.csv", "lat,lon,satelite,data\n");
 
-        when(inpeImportRepository.existsById(file.filename())).thenReturn(true);
+        when(inpeHotspotImportRepository.existsById(file.filename())).thenReturn(true);
 
         var result = importer.importFile(file);
 
@@ -42,20 +49,20 @@ class InpeHotspotImporterTest {
         assertThat(result.imported()).isFalse();
         assertThat(result.hotspotsSaved()).isZero();
 
-        verify(inpeImportRepository, never()).saveAndFlush(any());
+        verify(inpeHotspotImportRepository, never()).saveAndFlush(any());
         verifyNoInteractions(parser, hotspotRepository);
     }
 
     @Test
     void shouldImportNewFileAndPersistParsedHotspots() {
-        var importer = new InpeHotspotImporter(parser, inpeImportRepository, hotspotRepository);
-        var file = new InpeCsvFile("focos_10min_20260727_1200.csv", "csv-content");
+        var importer = new InpeHotspotFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
+        var file = new InpeHotspotCsvFile("focos_10min_20260727_1200.csv", "csv-content");
         var hotspots = List.of(
                 new InpeHotspot(-26.918900, -49.066100, "GOES-19", Instant.parse("2026-07-27T12:00:00Z")),
                 new InpeHotspot(-12.881300, -68.021900, "GOES-19", Instant.parse("2026-07-27T12:00:00Z"))
         );
 
-        when(inpeImportRepository.existsById(file.filename())).thenReturn(false);
+        when(inpeHotspotImportRepository.existsById(file.filename())).thenReturn(false);
         when(parser.parse(any(Reader.class))).thenReturn(hotspots);
 
         var result = importer.importFile(file);
@@ -64,7 +71,7 @@ class InpeHotspotImporterTest {
         assertThat(result.imported()).isTrue();
         assertThat(result.hotspotsSaved()).isEqualTo(2);
 
-        verify(inpeImportRepository).saveAndFlush(any(InpeImportEntity.class));
+        verify(inpeHotspotImportRepository).saveAndFlush(any(InpeHotspotImportEntity.class));
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Iterable<HotspotEntity>> hotspotsCaptor = ArgumentCaptor.forClass(Iterable.class);

@@ -1,20 +1,21 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.importer;
 
+import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
 @Service
-public class InpeHotspotService {
+public class InpeHotspotImportService {
 
-    private final InpeHotspotImporter importer;
+    private final InpeHotspotFileImporterService fileImporter;
     private final InpeHotspotCsvClient csvClient;
 
-    public InpeHotspotService(
-            InpeHotspotImporter importer,
+    public InpeHotspotImportService(
+            InpeHotspotFileImporterService fileImporter,
             InpeHotspotCsvClient csvClient
     ) {
-        this.importer = importer;
+        this.fileImporter = fileImporter;
         this.csvClient = csvClient;
     }
 
@@ -23,7 +24,7 @@ public class InpeHotspotService {
         var results = new ArrayList<InpeHotspotFileImportResult>();
 
         for (var csvFile : csvFiles) {
-            results.add(importer.importFile(csvFile));
+            results.add(fileImporter.importFile(csvFile));
         }
 
         return InpeHotspotImportSummary.from(results);

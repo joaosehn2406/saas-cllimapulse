@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "inpe_file", schema = "climapulse")
-class InpeImportEntity {
+public class InpeHotspotImportEntity {
 
     @Id
     @Column(length = 80, nullable = false)
@@ -23,10 +23,10 @@ class InpeImportEntity {
     )
     private Instant importedAt;
 
-    protected InpeImportEntity() {
+    protected InpeHotspotImportEntity() {
     }
 
-    InpeImportEntity(String filename) {
+    public InpeHotspotImportEntity(String filename) {
         this.filename = filename;
     }
 }

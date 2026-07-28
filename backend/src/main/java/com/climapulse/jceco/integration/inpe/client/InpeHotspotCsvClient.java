@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.client;
 
 import com.climapulse.jceco.shared.exception.InpeCsvClientException;
 import org.springframework.stereotype.Component;
@@ -31,8 +31,8 @@ public class InpeHotspotCsvClient {
         this.filenameGenerator = filenameGenerator;
     }
 
-    public List<InpeCsvFile> fetchRecentCsvs() {
-        var files = new ArrayList<InpeCsvFile>();
+    public List<InpeHotspotCsvFile> fetchRecentCsvs() {
+        var files = new ArrayList<InpeHotspotCsvFile>();
 
         for (String filename : filenameGenerator.buildRecentFilenames()) {
             var file = fetchCsvIfExists(filename);
@@ -43,7 +43,7 @@ public class InpeHotspotCsvClient {
         return files;
     }
 
-    private Optional<InpeCsvFile> fetchCsvIfExists(String filename) {
+    private Optional<InpeHotspotCsvFile> fetchCsvIfExists(String filename) {
         var request = HttpRequest.newBuilder()
                 .uri(INPE_BASE_URI.resolve(filename))
                 .timeout(Duration.ofSeconds(20))
@@ -62,7 +62,7 @@ public class InpeHotspotCsvClient {
             );
         }
 
-        return Optional.of(new InpeCsvFile(filename, response.body()));
+        return Optional.of(new InpeHotspotCsvFile(filename, response.body()));
     }
 
     private HttpResponse<String> send(HttpRequest request) {

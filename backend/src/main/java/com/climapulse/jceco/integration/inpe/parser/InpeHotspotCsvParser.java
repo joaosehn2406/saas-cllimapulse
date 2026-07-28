@@ -1,5 +1,6 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.parser;
 
+import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
 import com.climapulse.jceco.shared.exception.InpeCsvParsingException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -38,7 +39,7 @@ public class InpeHotspotCsvParser {
                             record.get("satelite"),
                             parseObservedAt(record.get("data"))
                     )).toList();
-        } catch(IOException exception) {
+        } catch (IOException exception) {
             throw new InpeCsvParsingException("Could not read INPE CSV", exception);
         }
     }

@@ -1,5 +1,6 @@
-package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe.parser;
 
+import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
 import com.climapulse.jceco.shared.exception.InpeCsvParsingException;
 import org.junit.jupiter.api.Test;
 

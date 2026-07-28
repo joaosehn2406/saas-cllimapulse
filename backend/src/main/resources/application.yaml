@@ -42,5 +42,9 @@ management:
     health:
       show-details: always
 
+climapulse:
+  inpe:
+    import-delay: 10m
+
 server:
   port: 8080
