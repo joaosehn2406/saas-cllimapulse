@@ -1,4 +1,4 @@
-﻿package com.climapulse.jceco.integration.inpe;
+package com.climapulse.jceco.integration.inpe;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
