@@ -1,6 +1,7 @@
 package com.climapulse.jceco.integration.inpe.client;
 
 import com.climapulse.jceco.shared.exception.InpeCsvClientException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -17,18 +18,19 @@ import java.util.Optional;
 @Component
 public class InpeHotspotCsvClient {
 
-    private static final URI INPE_BASE_URI = URI.create(
-            "https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/10min/"
-    );
-
     private final InpeHotspotCsvFilenameGenerator filenameGenerator;
+    private final URI inpeBaseUri;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    public InpeHotspotCsvClient(InpeHotspotCsvFilenameGenerator filenameGenerator) {
+    public InpeHotspotCsvClient(
+            InpeHotspotCsvFilenameGenerator filenameGenerator,
+            @Value("${climapulse.inpe.csv-base-url}") URI inpeBaseUri
+    ) {
         this.filenameGenerator = filenameGenerator;
+        this.inpeBaseUri = inpeBaseUri;
     }
 
     public List<InpeHotspotCsvFile> fetchRecentCsvs() {
@@ -45,7 +47,7 @@ public class InpeHotspotCsvClient {
 
     private Optional<InpeHotspotCsvFile> fetchCsvIfExists(String filename) {
         var request = HttpRequest.newBuilder()
-                .uri(INPE_BASE_URI.resolve(filename))
+                .uri(inpeBaseUri.resolve(filename))
                 .timeout(Duration.ofSeconds(20))
                 .GET()
                 .build();
