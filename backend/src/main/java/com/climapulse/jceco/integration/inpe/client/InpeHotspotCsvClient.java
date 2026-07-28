@@ -1,11 +1,10 @@
 package com.climapulse.jceco.integration.inpe.client;
 
+import com.climapulse.jceco.integration.inpe.config.InpeProperties;
 import com.climapulse.jceco.shared.exception.InpeCsvClientException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -19,7 +18,7 @@ import java.util.Optional;
 public class InpeHotspotCsvClient {
 
     private final InpeHotspotCsvFilenameGenerator filenameGenerator;
-    private final URI inpeBaseUri;
+    private final InpeProperties inpeProperties;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -27,10 +26,10 @@ public class InpeHotspotCsvClient {
 
     public InpeHotspotCsvClient(
             InpeHotspotCsvFilenameGenerator filenameGenerator,
-            @Value("${climapulse.inpe.csv-base-url}") URI inpeBaseUri
+            InpeProperties inpeProperties
     ) {
         this.filenameGenerator = filenameGenerator;
-        this.inpeBaseUri = inpeBaseUri;
+        this.inpeProperties = inpeProperties;
     }
 
     public List<InpeHotspotCsvFile> fetchRecentCsvs() {
@@ -47,7 +46,7 @@ public class InpeHotspotCsvClient {
 
     private Optional<InpeHotspotCsvFile> fetchCsvIfExists(String filename) {
         var request = HttpRequest.newBuilder()
-                .uri(inpeBaseUri.resolve(filename))
+                .uri(inpeProperties.csvBaseUrl().resolve(filename))
                 .timeout(Duration.ofSeconds(20))
                 .GET()
                 .build();
