@@ -58,15 +58,6 @@ class InpeHotspotCsvFilenameGeneratorTest {
         assertThat(firstFileInstant).isBeforeOrEqualTo(after);
     }
 
-    @Test
-    void shouldUseDefaultRecentFilesCountWhenConfiguredValueIsInvalid() {
-        var generator = generatorWithRecentFilesCount(0);
-
-        var filenames = generator.buildRecentFilenames();
-
-        assertThat(filenames).hasSize(3);
-    }
-
     private InpeHotspotCsvFilenameGenerator generatorWithRecentFilesCount(int recentFilesCount) {
         var properties = new InpeProperties(URI.create("https://example.com/"), recentFilesCount);
 

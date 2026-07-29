@@ -2,6 +2,8 @@ package com.climapulse.jceco.integration.inpe.client;
 
 import com.climapulse.jceco.integration.inpe.config.InpeProperties;
 import com.climapulse.jceco.shared.exception.InpeCsvClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.util.Optional;
 
 @Component
 public class InpeHotspotCsvClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(InpeHotspotCsvClient.class);
 
     private final InpeHotspotCsvFilenameGenerator filenameGenerator;
     private final InpeProperties inpeProperties;
@@ -36,9 +40,11 @@ public class InpeHotspotCsvClient {
         var files = new ArrayList<InpeHotspotCsvFile>();
 
         for (String filename : filenameGenerator.buildRecentFilenames()) {
-            var file = fetchCsvIfExists(filename);
-
-            file.ifPresent(files::add);
+            try {
+                fetchCsvIfExists(filename).ifPresent(files::add);
+            } catch (InpeCsvClientException exception) {
+                LOGGER.warn("Could not fetch INPE CSV file: {}", filename, exception);
+            }
         }
 
         return files;
