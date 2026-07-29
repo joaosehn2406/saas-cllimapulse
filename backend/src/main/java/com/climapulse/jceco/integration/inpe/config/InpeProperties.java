@@ -6,6 +6,13 @@ import java.net.URI;
 
 @ConfigurationProperties(prefix = "climapulse.inpe")
 public record InpeProperties(
-        URI csvBaseUrl
+        URI csvBaseUrl,
+        int recentFilesCount
 ) {
+
+    public InpeProperties {
+        if (recentFilesCount <= 0) {
+            recentFilesCount = 3;
+        }
+    }
 }

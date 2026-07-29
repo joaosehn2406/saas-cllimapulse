@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -25,8 +26,11 @@ public class InpeHotspotCsvParser {
             "data"
     );
 
-    private static final DateTimeFormatter INPE_DATE_FORMATTER =
+    private static final DateTimeFormatter INPE_DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static final DateTimeFormatter INPE_DATE_FORMATTER =
+            DateTimeFormatter.ISO_LOCAL_DATE;
 
     public List<InpeHotspot> parse(Reader reader) {
         try (var parser = createParser(reader)) {
@@ -81,7 +85,14 @@ public class InpeHotspotCsvParser {
 
     private Instant parseObservedAt(String value) {
         try {
-            return LocalDateTime.parse(value, INPE_DATE_FORMATTER)
+            if (value.length() == 10) {
+                return LocalDate.parse(value, INPE_DATE_FORMATTER)
+                        .atStartOfDay()
+                        .atOffset(ZoneOffset.UTC)
+                        .toInstant();
+            }
+
+            return LocalDateTime.parse(value, INPE_DATE_TIME_FORMATTER)
                     .atOffset(ZoneOffset.UTC)
                     .toInstant();
         } catch (RuntimeException exception) {

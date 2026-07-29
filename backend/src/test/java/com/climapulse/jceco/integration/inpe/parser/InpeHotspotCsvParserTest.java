@@ -64,6 +64,18 @@ class InpeHotspotCsvParserTest {
     }
 
     @Test
+    void shouldParseDateOnlyInpeCsvAsStartOfDayUtc() {
+        var csv = """
+                lat,lon,satelite,data
+                -11.479000,-66.325300,GOES-19,2026-07-29
+                """;
+
+        var hotspots = parser.parse(new StringReader(csv));
+
+        assertThat(hotspots).hasSize(1);
+        assertThat(hotspots.getFirst().observedAt()).isEqualTo(Instant.parse("2026-07-29T00:00:00Z"));
+    }
+    @Test
     void shouldRejectCsvWithInvalidHeaders() {
         var csv = """
                 latitude,longitude,satelite,data

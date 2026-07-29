@@ -46,6 +46,7 @@ climapulse:
   inpe:
     csv-base-url: https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/10min/
     import-delay: 10m
+    recent-files-count: 100
 
 server:
   port: 8080

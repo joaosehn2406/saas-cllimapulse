@@ -21,10 +21,11 @@ public class InpeHotspotImportJob {
         var summary = inpeHotspotImportService.importRecentHotspots();
 
         LOGGER.info(
-                "INPE hotspot import finished. filesFound={}, filesImported={}, filesSkipped={}, hotspotsSaved={}",
+                "INPE hotspot import finished. filesFound={}, filesImported={}, filesSkipped={}, failedFiles={}, hotspotsSaved={}",
                 summary.filesFound(),
                 summary.filesImported(),
                 summary.filesSkipped(),
+                summary.failedFiles(),
                 summary.hotspotsSaved()
         );
     }

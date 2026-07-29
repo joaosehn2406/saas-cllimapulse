@@ -1,7 +1,9 @@
 package com.climapulse.jceco.integration.inpe.client;
 
+import com.climapulse.jceco.integration.inpe.config.InpeProperties;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -16,12 +18,12 @@ class InpeHotspotCsvFilenameGeneratorTest {
             DateTimeFormatter.ofPattern("'focos_10min_'yyyyMMdd_HHmm'.csv'");
 
     @Test
-    void shouldBuildThreeRecentFilenames() {
-        var generator = new InpeHotspotCsvFilenameGenerator();
+    void shouldBuildConfiguredAmountOfRecentFilenames() {
+        var generator = generatorWithRecentFilesCount(5);
 
         var filenames = generator.buildRecentFilenames();
 
-        assertThat(filenames).hasSize(3);
+        assertThat(filenames).hasSize(5);
         assertThat(filenames).allMatch(filename ->
                 filename.matches("focos_10min_\\d{8}_\\d{4}\\.csv")
         );
@@ -29,7 +31,7 @@ class InpeHotspotCsvFilenameGeneratorTest {
 
     @Test
     void shouldBuildFilenamesWithTenMinuteIntervals() {
-        var generator = new InpeHotspotCsvFilenameGenerator();
+        var generator = generatorWithRecentFilesCount(3);
 
         var filenames = generator.buildRecentFilenames();
 
@@ -45,7 +47,7 @@ class InpeHotspotCsvFilenameGeneratorTest {
     @Test
     void shouldBuildFilenamesBasedOnCurrentUtcTime() {
         var before = Instant.now();
-        var generator = new InpeHotspotCsvFilenameGenerator();
+        var generator = generatorWithRecentFilesCount(3);
 
         var filenames = generator.buildRecentFilenames();
 
@@ -54,6 +56,21 @@ class InpeHotspotCsvFilenameGeneratorTest {
 
         assertThat(firstFileInstant).isAfterOrEqualTo(before.minus(Duration.ofMinutes(10)));
         assertThat(firstFileInstant).isBeforeOrEqualTo(after);
+    }
+
+    @Test
+    void shouldUseDefaultRecentFilesCountWhenConfiguredValueIsInvalid() {
+        var generator = generatorWithRecentFilesCount(0);
+
+        var filenames = generator.buildRecentFilenames();
+
+        assertThat(filenames).hasSize(3);
+    }
+
+    private InpeHotspotCsvFilenameGenerator generatorWithRecentFilesCount(int recentFilesCount) {
+        var properties = new InpeProperties(URI.create("https://example.com/"), recentFilesCount);
+
+        return new InpeHotspotCsvFilenameGenerator(properties);
     }
 
     private LocalDateTime parseFilenameTime(String filename) {
