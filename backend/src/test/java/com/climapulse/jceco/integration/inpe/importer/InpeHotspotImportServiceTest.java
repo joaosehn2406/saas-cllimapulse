@@ -9,8 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +23,56 @@ class InpeHotspotImportServiceTest {
 
     @Mock
     private InpeHotspotCsvClient csvClient;
+
+    @Test
+    void shouldReturnEmptySummaryWhenRecentFileDoesNotExist() {
+        var service = new InpeHotspotImportService(fileImporter, csvClient);
+
+        when(csvClient.fetchRecentCsv()).thenReturn(Optional.empty());
+
+        var summary = service.importRecentHotspot();
+
+        assertThat(summary.filesFound()).isZero();
+        assertThat(summary.filesImported()).isZero();
+        assertThat(summary.filesSkipped()).isZero();
+        assertThat(summary.failedFiles()).isZero();
+        assertThat(summary.hotspotsSaved()).isZero();
+        verifyNoInteractions(fileImporter);
+    }
+
+    @Test
+    void shouldImportRecentFileWhenItExists() {
+        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var file = new InpeHotspotCsvFile("recent.csv", "csv-content");
+
+        when(csvClient.fetchRecentCsv()).thenReturn(Optional.of(file));
+        when(fileImporter.importFile(file)).thenReturn(InpeHotspotFileImportResult.imported(file.filename(), 2));
+
+        var summary = service.importRecentHotspot();
+
+        assertThat(summary.filesFound()).isEqualTo(1);
+        assertThat(summary.filesImported()).isEqualTo(1);
+        assertThat(summary.filesSkipped()).isZero();
+        assertThat(summary.failedFiles()).isZero();
+        assertThat(summary.hotspotsSaved()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldReturnFailedSummaryWhenRecentFileImportFails() {
+        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var file = new InpeHotspotCsvFile("failed.csv", "bad-csv-content");
+
+        when(csvClient.fetchRecentCsv()).thenReturn(Optional.of(file));
+        when(fileImporter.importFile(file)).thenThrow(new RuntimeException("Invalid CSV"));
+
+        var summary = service.importRecentHotspot();
+
+        assertThat(summary.filesFound()).isEqualTo(1);
+        assertThat(summary.filesImported()).isZero();
+        assertThat(summary.filesSkipped()).isZero();
+        assertThat(summary.failedFiles()).isEqualTo(1);
+        assertThat(summary.hotspotsSaved()).isZero();
+    }
 
     @Test
     void shouldContinueImportingWhenOneFileFails() {
