@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe.importer;
+package com.climapulse.jceco.integration.inpe.model;
 
 public record InpeHotspotFileImportResult(
         String filename,
@@ -7,15 +7,15 @@ public record InpeHotspotFileImportResult(
         int hotspotsSaved
 ) {
 
-    static InpeHotspotFileImportResult imported(String filename, int hotspotsSaved) {
+    public static InpeHotspotFileImportResult imported(String filename, int hotspotsSaved) {
         return new InpeHotspotFileImportResult(filename, true, false, hotspotsSaved);
     }
 
-    static InpeHotspotFileImportResult skipped(String filename) {
+    public static InpeHotspotFileImportResult skipped(String filename) {
         return new InpeHotspotFileImportResult(filename, false, false, 0);
     }
 
-    static InpeHotspotFileImportResult failed(String filename) {
+    public static InpeHotspotFileImportResult failed(String filename) {
         return new InpeHotspotFileImportResult(filename, false, true, 0);
     }
 }

@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe.importer;
+package com.climapulse.jceco.integration.inpe.model;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public record InpeHotspotImportSummary(
         int hotspotsSaved
 ) {
 
-    static InpeHotspotImportSummary from(List<InpeHotspotFileImportResult> results) {
+    public static InpeHotspotImportSummary from(List<InpeHotspotFileImportResult> results) {
         int filesFound = results.size();
         int filesImported = 0;
         int hotspotsSaved = 0;

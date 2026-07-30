@@ -45,7 +45,7 @@ management:
 climapulse:
   inpe:
     csv-base-url: https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/10min/
-    import-delay: 10m
+    live-import-cron: "0 2/10 * * * *"
     recent-files-count: 100
 
 server:

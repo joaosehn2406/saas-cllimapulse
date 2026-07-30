@@ -25,13 +25,18 @@ public class InpeHotspotCsvFilenameGenerator {
         this.recentFilesCount = inpeProperties.recentFilesCount();
     }
 
+    public String buildRecentFilename() {
+
+        return FILENAME_FORMATTER.format(roundDownToInpeInterval(Instant.now()));
+    }
+
     protected List<String> buildRecentFilenames() {
         List<String> filenames = new ArrayList<>();
-        var roundedTime = roundDownToInpeInterval(Instant.now());
+        Instant currentTimeRounded = roundDownToInpeInterval(Instant.now());
 
         for (int index = 0; index < recentFilesCount; index++) {
             int minutesToSubtract = index * INPE_INTERVAL_MINUTES;
-            Instant instant = roundedTime.minus(Duration.ofMinutes(minutesToSubtract));
+            Instant instant = currentTimeRounded.minus(Duration.ofMinutes(minutesToSubtract));
 
             filenames.add(FILENAME_FORMATTER.format(instant));
         }
@@ -40,8 +45,8 @@ public class InpeHotspotCsvFilenameGenerator {
     }
 
     private Instant roundDownToInpeInterval(Instant instant) {
-        var intervalSeconds = Duration.ofMinutes(INPE_INTERVAL_MINUTES).toSeconds();
-        var roundedEpochSecond = instant.getEpochSecond() / intervalSeconds * intervalSeconds;
+        long intervalSeconds = Duration.ofMinutes(INPE_INTERVAL_MINUTES).toSeconds();
+        long roundedEpochSecond = instant.getEpochSecond() / intervalSeconds * intervalSeconds;
 
         return Instant.ofEpochSecond(roundedEpochSecond);
     }

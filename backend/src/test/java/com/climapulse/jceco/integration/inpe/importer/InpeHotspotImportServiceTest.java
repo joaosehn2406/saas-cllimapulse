@@ -1,7 +1,8 @@
 package com.climapulse.jceco.integration.inpe.importer;
 
 import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvClient;
-import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotFileImportResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -16,7 +17,7 @@ import static org.mockito.Mockito.when;
 class InpeHotspotImportServiceTest {
 
     @Mock
-    private InpeHotspotFileImporterService fileImporter;
+    private InpeHotspotCsvFileImporterService fileImporter;
 
     @Mock
     private InpeHotspotCsvClient csvClient;

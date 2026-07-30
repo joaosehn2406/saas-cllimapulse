@@ -1,6 +1,7 @@
 package com.climapulse.jceco.integration.inpe.importer;
 
-import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotFileImportResult;
 import com.climapulse.jceco.integration.inpe.parser.InpeHotspotCsvParser;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotEntity;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotRepository;
@@ -12,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.StringReader;
 
 @Service
-public class InpeHotspotFileImporterService {
+public class InpeHotspotCsvFileImporterService {
 
     private final InpeHotspotCsvParser parser;
     private final InpeHotspotImportRepository inpeHotspotImportRepository;
     private final HotspotRepository hotspotRepository;
 
-    public InpeHotspotFileImporterService(
+    public InpeHotspotCsvFileImporterService(
             InpeHotspotCsvParser parser,
             InpeHotspotImportRepository inpeHotspotImportRepository,
             HotspotRepository hotspotRepository

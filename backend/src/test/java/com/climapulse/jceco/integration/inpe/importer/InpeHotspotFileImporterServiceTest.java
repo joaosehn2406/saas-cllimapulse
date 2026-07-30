@@ -1,6 +1,6 @@
 package com.climapulse.jceco.integration.inpe.importer;
 
-import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvFile;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
 import com.climapulse.jceco.integration.inpe.parser.InpeHotspotCsvParser;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotEntity;
@@ -38,7 +38,7 @@ class InpeHotspotFileImporterServiceTest {
 
     @Test
     void shouldSkipAlreadyImportedFile() {
-        var importer = new InpeHotspotFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
+        var importer = new InpeHotspotCsvFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
         var file = new InpeHotspotCsvFile("focos_10min_20260727_1200.csv", "lat,lon,satelite,data\n");
 
         when(inpeHotspotImportRepository.existsById(file.filename())).thenReturn(true);
@@ -55,7 +55,7 @@ class InpeHotspotFileImporterServiceTest {
 
     @Test
     void shouldImportNewFileAndPersistParsedHotspots() {
-        var importer = new InpeHotspotFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
+        var importer = new InpeHotspotCsvFileImporterService(parser, inpeHotspotImportRepository, hotspotRepository);
         var file = new InpeHotspotCsvFile("focos_10min_20260727_1200.csv", "csv-content");
         var hotspots = List.of(
                 new InpeHotspot(-26.918900, -49.066100, "GOES-19", Instant.parse("2026-07-27T12:00:00Z")),

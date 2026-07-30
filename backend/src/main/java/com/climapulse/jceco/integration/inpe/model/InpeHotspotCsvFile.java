@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.inpe.client;
+package com.climapulse.jceco.integration.inpe.model;
 
 public record InpeHotspotCsvFile(
         String filename,

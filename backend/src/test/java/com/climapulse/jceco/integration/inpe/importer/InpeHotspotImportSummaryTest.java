@@ -1,5 +1,7 @@
 package com.climapulse.jceco.integration.inpe.importer;
 
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotFileImportResult;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotImportSummary;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

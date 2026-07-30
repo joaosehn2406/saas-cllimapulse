@@ -1,6 +1,7 @@
 package com.climapulse.jceco.integration.inpe.client;
 
 import com.climapulse.jceco.integration.inpe.config.InpeProperties;
+import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
 import com.climapulse.jceco.shared.exception.InpeCsvClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +37,19 @@ public class InpeHotspotCsvClient {
         this.inpeProperties = inpeProperties;
     }
 
+    public Optional<InpeHotspotCsvFile> fetchRecentCsv() {
+        String filename = filenameGenerator.buildRecentFilename();
+
+        try {
+            return fetchCsvIfExists(filename);
+        } catch (InpeCsvClientException exception) {
+            LOGGER.warn("Could not fetch INPE CSV file: {}", filename, exception);
+            return Optional.empty();
+        }
+    }
+
     public List<InpeHotspotCsvFile> fetchRecentCsvs() {
-        var files = new ArrayList<InpeHotspotCsvFile>();
+        List<InpeHotspotCsvFile> files = new ArrayList<>();
 
         for (String filename : filenameGenerator.buildRecentFilenames()) {
             try {
@@ -51,13 +63,13 @@ public class InpeHotspotCsvClient {
     }
 
     private Optional<InpeHotspotCsvFile> fetchCsvIfExists(String filename) {
-        var request = HttpRequest.newBuilder()
+        HttpRequest request = HttpRequest.newBuilder()
                 .uri(inpeProperties.csvBaseUrl().resolve(filename))
                 .timeout(Duration.ofSeconds(20))
                 .GET()
                 .build();
 
-        var response = send(request);
+        HttpResponse<String> response = send(request);
 
         if (response.statusCode() == 404) {
             return Optional.empty();
