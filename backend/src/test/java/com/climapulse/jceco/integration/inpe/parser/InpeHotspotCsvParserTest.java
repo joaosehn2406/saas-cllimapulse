@@ -110,4 +110,30 @@ class InpeHotspotCsvParserTest {
                 .isInstanceOf(InpeCsvParsingException.class)
                 .hasMessageContaining("Invalid INPE date");
     }
+
+    @Test
+    void shouldRejectInvalidRow() {
+        var csv = """
+                lat,lon,satelite,data
+                -26.918900,invalid-longitude,GOES-19,2026-07-07 02:50:00
+                """;
+
+        assertThatThrownBy(() -> parser.parse(new StringReader(csv)))
+                .isInstanceOf(InpeCsvParsingException.class)
+                .hasMessageContaining("Invalid numeric value for field: lon");
+    }
+
+    @Test
+    void shouldRejectWholeCsvWhenInvalidRowIsBetweenValidRows() {
+        var csv = """
+                lat,lon,satelite,data
+                -26.918900,-49.066100,GOES-19,2026-07-07 02:50:00
+                invalid-latitude,-48.000000,GOES-19,2026-07-07 03:00:00
+                -25.000000,-47.000000,GOES-19,2026-07-07 03:10:00
+                """;
+
+        assertThatThrownBy(() -> parser.parse(new StringReader(csv)))
+                .isInstanceOf(InpeCsvParsingException.class)
+                .hasMessageContaining("Invalid numeric value for field: lat");
+    }
 }
