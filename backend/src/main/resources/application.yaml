@@ -49,5 +49,10 @@ climapulse:
     recent-files-count: 100
     catch-up-enabled: true
 
+  open-meteo:
+    base-url: https://api.open-meteo.com
+    forecast-hours: 24
+    past-hours: 1
+
 server:
   port: 8080
