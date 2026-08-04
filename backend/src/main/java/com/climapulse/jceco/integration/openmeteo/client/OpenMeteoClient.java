@@ -25,10 +25,7 @@ public class OpenMeteoClient {
     private final RestClient restClient;
     private final OpenMeteoProperties properties;
 
-    public OpenMeteoClient(
-            OpenMeteoProperties properties,
-            RestClient.Builder builder
-    ) {
+    public OpenMeteoClient(OpenMeteoProperties properties, RestClient.Builder builder) {
         this.properties = properties;
 
         this.restClient = builder
@@ -44,14 +41,8 @@ public class OpenMeteoClient {
                             .queryParam("latitude", latitude)
                             .queryParam("longitude", longitude)
                             .queryParam("hourly", HOURLY_VARIABLES)
-                            .queryParam(
-                                    "forecast_hours",
-                                    properties.forecastHours()
-                            )
-                            .queryParam(
-                                    "past_hours",
-                                    properties.pastHours()
-                            )
+                            .queryParam("forecast_hours", properties.forecastHours())
+                            .queryParam("past_hours", properties.pastHours())
                             .queryParam("timezone", "UTC")
                             .queryParam("cell_selection", "land")
                             .build())
@@ -59,17 +50,12 @@ public class OpenMeteoClient {
                     .body(OpenMeteoForecastResponse.class);
 
             if (response == null) {
-                throw new OpenMeteoClientException(
-                        "Open-Meteo returned an empty response"
-                );
+                throw new OpenMeteoClientException("Open-Meteo returned an empty response");
             }
 
             return response;
         } catch (RestClientException exception) {
-            throw new OpenMeteoClientException(
-                    "Could not communicate with Open-Meteo",
-                    exception
-            );
+            throw new OpenMeteoClientException("Could not communicate with Open-Meteo", exception);
         }
     }
 }
