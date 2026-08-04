@@ -2,8 +2,10 @@ package com.climapulse.jceco.integration.openmeteo.client;
 
 import com.climapulse.jceco.integration.openmeteo.config.OpenMeteoProperties;
 import com.climapulse.jceco.integration.openmeteo.model.response.OpenMeteoForecastResponse;
+import com.climapulse.jceco.shared.exception.OpenMeteoClientException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class OpenMeteoClient {
@@ -34,31 +36,40 @@ public class OpenMeteoClient {
                 .build();
     }
 
-    public OpenMeteoForecastResponse fetchForecast(
-            double latitude,
-            double longitude
-    ) {
-        return restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/v1/forecast")
-                        .queryParam("latitude", latitude)
-                        .queryParam("longitude", longitude)
-                        .queryParam("hourly", HOURLY_VARIABLES)
-                        .queryParam(
-                                "forecast_hours",
-                                properties.forecastHours()
-                        )
-                        .queryParam(
-                                "past_hours",
-                                properties.pastHours()
-                        )
-                        .queryParam("timezone", "UTC")
-                        .queryParam("cell_selection", "land")
-                        .queryParam("temperature_unit", "celsius")
-                        .queryParam("wind_speed_unit", "kmh")
-                        .queryParam("precipitation_unit", "mm")
-                        .build())
-                .retrieve()
-                .body(OpenMeteoForecastResponse.class);
+    public OpenMeteoForecastResponse fetchForecast(double latitude, double longitude) {
+        try {
+            OpenMeteoForecastResponse response = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/v1/forecast")
+                            .queryParam("latitude", latitude)
+                            .queryParam("longitude", longitude)
+                            .queryParam("hourly", HOURLY_VARIABLES)
+                            .queryParam(
+                                    "forecast_hours",
+                                    properties.forecastHours()
+                            )
+                            .queryParam(
+                                    "past_hours",
+                                    properties.pastHours()
+                            )
+                            .queryParam("timezone", "UTC")
+                            .queryParam("cell_selection", "land")
+                            .build())
+                    .retrieve()
+                    .body(OpenMeteoForecastResponse.class);
+
+            if (response == null) {
+                throw new OpenMeteoClientException(
+                        "Open-Meteo returned an empty response"
+                );
+            }
+
+            return response;
+        } catch (RestClientException exception) {
+            throw new OpenMeteoClientException(
+                    "Could not communicate with Open-Meteo",
+                    exception
+            );
+        }
     }
 }
