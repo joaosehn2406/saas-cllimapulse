@@ -1,4 +1,4 @@
-package com.climapulse.jceco.integration.openmeteo.model.response;
+package com.climapulse.jceco.integration.openmeteo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

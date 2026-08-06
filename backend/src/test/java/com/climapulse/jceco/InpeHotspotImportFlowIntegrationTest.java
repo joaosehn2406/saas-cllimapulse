@@ -1,8 +1,8 @@
 package com.climapulse.jceco;
 
 import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvClient;
-import com.climapulse.jceco.integration.inpe.importer.InpeHotspotCsvFileImporterService;
-import com.climapulse.jceco.integration.inpe.importer.InpeHotspotImportService;
+import com.climapulse.jceco.integration.inpe.service.InpeHotspotCsvFileImporterService;
+import com.climapulse.jceco.integration.inpe.service.InpeHotspotImportService;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotRepository;
 import com.climapulse.jceco.integration.inpe.persistence.InpeHotspotImportRepository;

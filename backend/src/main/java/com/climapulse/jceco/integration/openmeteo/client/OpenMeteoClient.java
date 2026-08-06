@@ -1,7 +1,7 @@
 package com.climapulse.jceco.integration.openmeteo.client;
 
 import com.climapulse.jceco.integration.openmeteo.config.OpenMeteoProperties;
-import com.climapulse.jceco.integration.openmeteo.model.response.OpenMeteoForecastResponse;
+import com.climapulse.jceco.integration.openmeteo.model.OpenMeteoForecastResponse;
 import com.climapulse.jceco.shared.exception.OpenMeteoClientException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;

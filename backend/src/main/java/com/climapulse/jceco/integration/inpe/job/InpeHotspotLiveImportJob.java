@@ -1,6 +1,6 @@
 package com.climapulse.jceco.integration.inpe.job;
 
-import com.climapulse.jceco.integration.inpe.importer.InpeHotspotImportService;
+import com.climapulse.jceco.integration.inpe.service.InpeHotspotImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
