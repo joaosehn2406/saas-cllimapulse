@@ -53,11 +53,27 @@ public class HotspotEntity {
         this.observedAt = hotspot.observedAt();
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public String getSourceFilename() {
+        return sourceFilename;
+    }
+
     public double getLatitude() {
         return latitude;
     }
 
     public double getLongitude() {
         return longitude;
+    }
+
+    public String getSatellite() {
+        return satellite;
+    }
+
+    public Instant getObservedAt() {
+        return observedAt;
     }
 }
