@@ -52,4 +52,12 @@ public class HotspotEntity {
         this.satellite = hotspot.satellite();
         this.observedAt = hotspot.observedAt();
     }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
 }
