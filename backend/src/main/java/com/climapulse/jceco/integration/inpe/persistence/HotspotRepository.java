@@ -44,9 +44,9 @@ public interface HotspotRepository extends JpaRepository<HotspotEntity, UUID> {
                     """,
             countQuery = """
                     SELECT COUNT(*)
-                    FROM climapulse.hotspot h
+                    FROM climapulse.hotspot hotspot
                     WHERE ST_DWithin(
-                        h.location,
+                        hotspot.location,
                         ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
                         :radiusMeters
                     )
@@ -58,5 +58,80 @@ public interface HotspotRepository extends JpaRepository<HotspotEntity, UUID> {
             @Param("longitude") double longitude,
             @Param("radiusMeters") double radiusMeters,
             Pageable pageable
+    );
+
+    @Query(
+            value = """
+                    SELECT
+                        hotspot.id,
+                        hotspot.source_filename,
+                        hotspot.latitude,
+                        hotspot.longitude,
+                        hotspot.satellite,
+                        hotspot.observed_at,
+                        hotspot.created_at
+                    FROM climapulse.hotspot hotspot
+                    WHERE ST_Covers(
+                        ST_MakeEnvelope(:minLongitude, :minLatitude, :maxLongitude, :maxLatitude, 4326),
+                        hotspot.location::geometry
+                    )
+                    ORDER BY hotspot.observed_at DESC
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM climapulse.hotspot hotspot
+                    WHERE ST_Covers(
+                        ST_MakeEnvelope(:minLongitude, :minLatitude, :maxLongitude, :maxLatitude, 4326),
+                        hotspot.location::geometry
+                    )
+                    """,
+            nativeQuery = true
+    )
+    Page<HotspotEntity> findWithinBoundingBox(
+            @Param("minLatitude") double minLatitude,
+            @Param("maxLatitude") double maxLatitude,
+            @Param("minLongitude") double minLongitude,
+            @Param("maxLongitude") double maxLongitude,
+            Pageable pageable
+    );
+
+    @Query(
+            value = """
+                    SELECT COUNT(*)
+                    FROM climapulse.hotspot hotspot
+                    WHERE hotspot.observed_at >= :observedSince
+                      AND ST_DWithin(
+                        hotspot.location,
+                        ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+                        :radiusMeters
+                      )
+                    """,
+            nativeQuery = true
+    )
+    long countWithinRadiusSince(
+            @Param("latitude") double latitude,
+            @Param("longitude") double longitude,
+            @Param("radiusMeters") double radiusMeters,
+            @Param("observedSince") Instant observedSince
+    );
+
+    @Query(
+            value = """
+                    SELECT COUNT(*)
+                    FROM climapulse.hotspot hotspot
+                    WHERE hotspot.observed_at >= :observedSince
+                      AND ST_Covers(
+                        ST_MakeEnvelope(:minLongitude, :minLatitude, :maxLongitude, :maxLatitude, 4326),
+                        hotspot.location::geometry
+                      )
+                    """,
+            nativeQuery = true
+    )
+    long countWithinBoundingBoxSince(
+            @Param("minLatitude") double minLatitude,
+            @Param("maxLatitude") double maxLatitude,
+            @Param("minLongitude") double minLongitude,
+            @Param("maxLongitude") double maxLongitude,
+            @Param("observedSince") Instant observedSince
     );
 }

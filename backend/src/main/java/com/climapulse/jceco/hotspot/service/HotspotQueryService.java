@@ -50,6 +50,50 @@ public class HotspotQueryService {
         return hotspotRepository.findWithinRadius(latitude, longitude, radiusMeters, defaultPage(page));
     }
 
+    @Transactional(readOnly = true)
+    public Page<HotspotEntity> findWithinBoundingBox(
+            double minLatitude,
+            double maxLatitude,
+            double minLongitude,
+            double maxLongitude,
+            int page
+    ) {
+        return hotspotRepository.findWithinBoundingBox(
+                minLatitude,
+                maxLatitude,
+                minLongitude,
+                maxLongitude,
+                defaultPage(page)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public long countWithinRadiusSince(
+            double latitude,
+            double longitude,
+            double radiusMeters,
+            Instant observedSince
+    ) {
+        return hotspotRepository.countWithinRadiusSince(latitude, longitude, radiusMeters, observedSince);
+    }
+
+    @Transactional(readOnly = true)
+    public long countWithinBoundingBoxSince(
+            double minLatitude,
+            double maxLatitude,
+            double minLongitude,
+            double maxLongitude,
+            Instant observedSince
+    ) {
+        return hotspotRepository.countWithinBoundingBoxSince(
+                minLatitude,
+                maxLatitude,
+                minLongitude,
+                maxLongitude,
+                observedSince
+        );
+    }
+
     private PageRequest defaultPage(int page) {
         return PageRequest.of(page, DEFAULT_PAGE_SIZE);
     }

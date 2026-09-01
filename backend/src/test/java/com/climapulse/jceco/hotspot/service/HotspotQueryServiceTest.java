@@ -142,6 +142,56 @@ class HotspotQueryServiceTest {
         assertThat(page.getContent().getFirst().getLongitude()).isEqualTo(-49.0661);
     }
 
+    @Test
+    void shouldFindHotspotsWithinBoundingBox() {
+        var service = new HotspotQueryService(hotspotRepository);
+        var pageable = PageRequest.of(0, 20);
+        var hotspot = hotspot(
+                UUID.randomUUID(),
+                "focos_10min_20260707_0250.csv",
+                -26.9189,
+                -49.0661,
+                "GOES-19",
+                Instant.parse("2026-07-07T02:50:00Z")
+        );
+
+        when(hotspotRepository.findWithinBoundingBox(-27, -26, -50, -49, pageable))
+                .thenReturn(new PageImpl<>(List.of(hotspot), pageable, 1));
+
+        var page = service.findWithinBoundingBox(-27, -26, -50, -49, 0);
+
+        assertThat(page.getNumber()).isZero();
+        assertThat(page.getSize()).isEqualTo(20);
+        assertThat(page.getTotalElements()).isEqualTo(1);
+        assertThat(page.getContent().getFirst().getLatitude()).isEqualTo(-26.9189);
+    }
+
+    @Test
+    void shouldCountHotspotsWithinRadiusSinceInstant() {
+        var service = new HotspotQueryService(hotspotRepository);
+        var observedSince = Instant.parse("2026-07-07T00:00:00Z");
+
+        when(hotspotRepository.countWithinRadiusSince(-26.9189, -49.0661, 10_000, observedSince))
+                .thenReturn(7L);
+
+        long count = service.countWithinRadiusSince(-26.9189, -49.0661, 10_000, observedSince);
+
+        assertThat(count).isEqualTo(7);
+    }
+
+    @Test
+    void shouldCountHotspotsWithinBoundingBoxSinceInstant() {
+        var service = new HotspotQueryService(hotspotRepository);
+        var observedSince = Instant.parse("2026-07-07T00:00:00Z");
+
+        when(hotspotRepository.countWithinBoundingBoxSince(-27, -26, -50, -49, observedSince))
+                .thenReturn(4L);
+
+        long count = service.countWithinBoundingBoxSince(-27, -26, -50, -49, observedSince);
+
+        assertThat(count).isEqualTo(4);
+    }
+
     private HotspotEntity hotspot(
             UUID id,
             String sourceFilename,
