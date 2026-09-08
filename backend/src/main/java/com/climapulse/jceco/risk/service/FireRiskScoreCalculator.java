@@ -5,6 +5,7 @@ import com.climapulse.jceco.risk.model.FireRiskAssessment;
 import com.climapulse.jceco.risk.model.RiskLevel;
 import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
 import com.climapulse.jceco.weather.service.WeatherSnapshotService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -24,6 +25,7 @@ public class FireRiskScoreCalculator {
     private final WeatherSnapshotService weatherSnapshotService;
     private final Clock clock;
 
+    @Autowired
     public FireRiskScoreCalculator(
             HotspotQueryService hotspotQueryService,
             WeatherSnapshotService weatherSnapshotService

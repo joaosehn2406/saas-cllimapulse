@@ -8,6 +8,7 @@ import com.climapulse.jceco.shared.exception.OpenMeteoClientException;
 import com.climapulse.jceco.weather.config.WeatherProperties;
 import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
 import com.climapulse.jceco.weather.persistence.WeatherSnapshotRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ public class WeatherSnapshotService {
     private final WeatherProperties properties;
     private final Clock clock;
 
+    @Autowired
     public WeatherSnapshotService(
             OpenMeteoClient openMeteoClient,
             WeatherSnapshotRepository weatherSnapshotRepository,

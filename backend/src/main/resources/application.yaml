@@ -58,5 +58,8 @@ climapulse:
     coordinate-scale: 2
     snapshot-ttl: 1h
 
+  kafka:
+    hotspot-import-completed-topic: climate.hotspot.imported.v1
+
 server:
   port: 8080

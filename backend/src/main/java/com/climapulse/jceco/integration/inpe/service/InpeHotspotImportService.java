@@ -4,6 +4,7 @@ import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvClient;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotFileImportResult;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotImportSummary;
+import com.climapulse.jceco.messaging.producer.HotspotImportEventProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,16 @@ public class InpeHotspotImportService {
 
     private final InpeHotspotCsvFileImporterService fileImporter;
     private final InpeHotspotCsvClient csvClient;
+    private final HotspotImportEventProducer eventProducer;
 
     public InpeHotspotImportService(
             InpeHotspotCsvFileImporterService fileImporter,
-            InpeHotspotCsvClient csvClient
+            InpeHotspotCsvClient csvClient,
+            HotspotImportEventProducer eventProducer
     ) {
         this.fileImporter = fileImporter;
         this.csvClient = csvClient;
+        this.eventProducer = eventProducer;
     }
 
     public InpeHotspotImportSummary importRecentHotspot() {
@@ -40,13 +44,13 @@ public class InpeHotspotImportService {
         try {
             InpeHotspotFileImportResult result = fileImporter.importFile(file);
 
-            return InpeHotspotImportSummary.from(List.of(result));
+            return publishAndReturn(InpeHotspotImportSummary.from(List.of(result)));
         } catch (RuntimeException exception) {
             LOGGER.warn("Could not import INPE file: {}", file.filename(), exception);
 
-            return InpeHotspotImportSummary.from(List.of(
+            return publishAndReturn(InpeHotspotImportSummary.from(List.of(
                     InpeHotspotFileImportResult.failed(file.filename())
-            ));
+            )));
         }
     }
 
@@ -63,6 +67,12 @@ public class InpeHotspotImportService {
             }
         }
 
-        return InpeHotspotImportSummary.from(results);
+        return publishAndReturn(InpeHotspotImportSummary.from(results));
+    }
+
+    private InpeHotspotImportSummary publishAndReturn(InpeHotspotImportSummary summary) {
+        eventProducer.publish(summary);
+
+        return summary;
     }
 }

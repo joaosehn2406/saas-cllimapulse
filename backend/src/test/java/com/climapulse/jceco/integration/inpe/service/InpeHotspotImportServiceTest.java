@@ -3,6 +3,7 @@ package com.climapulse.jceco.integration.inpe.service;
 import com.climapulse.jceco.integration.inpe.client.InpeHotspotCsvClient;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotCsvFile;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspotFileImportResult;
+import com.climapulse.jceco.messaging.producer.HotspotImportEventProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +26,12 @@ class InpeHotspotImportServiceTest {
     @Mock
     private InpeHotspotCsvClient csvClient;
 
+    @Mock
+    private HotspotImportEventProducer eventProducer;
+
     @Test
     void shouldReturnEmptySummaryWhenRecentFileDoesNotExist() {
-        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var service = new InpeHotspotImportService(fileImporter, csvClient, eventProducer);
 
         when(csvClient.fetchRecentCsv()).thenReturn(Optional.empty());
 
@@ -37,12 +42,12 @@ class InpeHotspotImportServiceTest {
         assertThat(summary.filesSkipped()).isZero();
         assertThat(summary.failedFiles()).isZero();
         assertThat(summary.hotspotsSaved()).isZero();
-        verifyNoInteractions(fileImporter);
+        verifyNoInteractions(fileImporter, eventProducer);
     }
 
     @Test
     void shouldImportRecentFileWhenItExists() {
-        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var service = new InpeHotspotImportService(fileImporter, csvClient, eventProducer);
         var file = new InpeHotspotCsvFile("recent.csv", "csv-content");
 
         when(csvClient.fetchRecentCsv()).thenReturn(Optional.of(file));
@@ -55,11 +60,12 @@ class InpeHotspotImportServiceTest {
         assertThat(summary.filesSkipped()).isZero();
         assertThat(summary.failedFiles()).isZero();
         assertThat(summary.hotspotsSaved()).isEqualTo(2);
+        verify(eventProducer).publish(summary);
     }
 
     @Test
     void shouldReturnFailedSummaryWhenRecentFileImportFails() {
-        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var service = new InpeHotspotImportService(fileImporter, csvClient, eventProducer);
         var file = new InpeHotspotCsvFile("failed.csv", "bad-csv-content");
 
         when(csvClient.fetchRecentCsv()).thenReturn(Optional.of(file));
@@ -72,11 +78,12 @@ class InpeHotspotImportServiceTest {
         assertThat(summary.filesSkipped()).isZero();
         assertThat(summary.failedFiles()).isEqualTo(1);
         assertThat(summary.hotspotsSaved()).isZero();
+        verify(eventProducer).publish(summary);
     }
 
     @Test
     void shouldContinueImportingWhenOneFileFails() {
-        var service = new InpeHotspotImportService(fileImporter, csvClient);
+        var service = new InpeHotspotImportService(fileImporter, csvClient, eventProducer);
         var importedFile = new InpeHotspotCsvFile("imported.csv", "csv-content");
         var failedFile = new InpeHotspotCsvFile("failed.csv", "bad-csv-content");
 
@@ -91,5 +98,6 @@ class InpeHotspotImportServiceTest {
         assertThat(summary.filesSkipped()).isZero();
         assertThat(summary.failedFiles()).isEqualTo(1);
         assertThat(summary.hotspotsSaved()).isEqualTo(2);
+        verify(eventProducer).publish(summary);
     }
 }
