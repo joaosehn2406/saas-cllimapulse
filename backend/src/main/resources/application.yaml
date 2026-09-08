@@ -54,5 +54,9 @@ climapulse:
     forecast-hours: 24
     past-hours: 1
 
+  weather:
+    coordinate-scale: 2
+    snapshot-ttl: 1h
+
 server:
   port: 8080
