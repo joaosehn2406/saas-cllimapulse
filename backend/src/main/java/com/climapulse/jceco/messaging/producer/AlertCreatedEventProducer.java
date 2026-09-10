@@ -1,8 +1,8 @@
 package com.climapulse.jceco.messaging.producer;
 
-import com.climapulse.jceco.integration.inpe.model.InpeHotspotImportSummary;
+import com.climapulse.jceco.alert.persistence.AlertEntity;
 import com.climapulse.jceco.messaging.config.ClimapulseKafkaProperties;
-import com.climapulse.jceco.messaging.event.HotspotImportCompletedEvent;
+import com.climapulse.jceco.messaging.event.AlertCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,23 +12,23 @@ import org.springframework.stereotype.Component;
 import java.time.Clock;
 
 @Component
-public class HotspotImportEventProducer {
+public class AlertCreatedEventProducer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HotspotImportEventProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlertCreatedEventProducer.class);
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ClimapulseKafkaProperties properties;
     private final Clock clock;
 
     @Autowired
-    public HotspotImportEventProducer(
+    public AlertCreatedEventProducer(
             KafkaTemplate<String, String> kafkaTemplate,
             ClimapulseKafkaProperties properties
     ) {
         this(kafkaTemplate, properties, Clock.systemUTC());
     }
 
-    HotspotImportEventProducer(
+    AlertCreatedEventProducer(
             KafkaTemplate<String, String> kafkaTemplate,
             ClimapulseKafkaProperties properties,
             Clock clock
@@ -38,27 +38,23 @@ public class HotspotImportEventProducer {
         this.clock = clock;
     }
 
-    public void publish(InpeHotspotImportSummary summary) {
-        if (summary.filesFound() == 0) {
-            return;
-        }
-
-        var event = HotspotImportCompletedEvent.from(summary, clock.instant());
-        String occurredAt = event.occurredAt().toString();
+    public void publish(AlertEntity alert) {
+        var event = AlertCreatedEvent.from(alert, clock.instant());
+        String key = alert.getId().toString();
         String payload = event.toPayload();
 
         try {
-            var future = kafkaTemplate.send(properties.hotspotImportCompletedTopic(), occurredAt, payload);
+            var future = kafkaTemplate.send(properties.alertCreatedTopic(), key, payload);
 
             if (future != null) {
                 future.whenComplete((result, exception) -> {
                     if (exception != null) {
-                        LOGGER.warn("Could not publish hotspot import event", exception);
+                        LOGGER.warn("Could not publish alert created event", exception);
                     }
                 });
             }
         } catch (RuntimeException exception) {
-            LOGGER.warn("Could not publish hotspot import event", exception);
+            LOGGER.warn("Could not publish alert created event", exception);
         }
     }
 }

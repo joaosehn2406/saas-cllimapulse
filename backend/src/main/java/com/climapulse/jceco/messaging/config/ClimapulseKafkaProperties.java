@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "climapulse.kafka")
 public record ClimapulseKafkaProperties(
-        @NotBlank String hotspotImportCompletedTopic
+        @NotBlank String hotspotImportCompletedTopic,
+        @NotBlank String alertCreatedTopic
 ) {
 }

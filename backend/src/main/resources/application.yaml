@@ -60,6 +60,10 @@ climapulse:
 
   kafka:
     hotspot-import-completed-topic: climate.hotspot.imported.v1
+    alert-created-topic: climate.alert.created.v1
+
+  risk:
+    monitored-areas: []
 
 server:
   port: 8080

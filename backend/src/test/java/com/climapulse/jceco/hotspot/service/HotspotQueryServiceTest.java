@@ -3,6 +3,7 @@ package com.climapulse.jceco.hotspot.service;
 import com.climapulse.jceco.integration.inpe.model.InpeHotspot;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotEntity;
 import com.climapulse.jceco.integration.inpe.persistence.HotspotRepository;
+import com.climapulse.jceco.shared.pagination.PageRequestFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,9 +25,11 @@ class HotspotQueryServiceTest {
     @Mock
     private HotspotRepository hotspotRepository;
 
+    private final PageRequestFactory pageRequestFactory = new PageRequestFactory();
+
     @Test
     void shouldFindFirstPageOfRecentHotspotsByDefault() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(0, 20);
         var hotspot = hotspot(
                 UUID.randomUUID(),
@@ -55,7 +58,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldFindRequestedPageOfRecentHotspots() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(2, 20);
 
         when(hotspotRepository.findAllByOrderByObservedAtDesc(pageable))
@@ -69,7 +72,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldFindHotspotsByPeriod() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(1, 20);
         var from = Instant.parse("2026-07-07T00:00:00Z");
         var to = Instant.parse("2026-07-08T00:00:00Z");
@@ -95,7 +98,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldFindHotspotsBySatellite() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(1, 20);
         var hotspot = hotspot(
                 UUID.randomUUID(),
@@ -119,7 +122,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldFindHotspotsWithinRadius() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(0, 20);
         var hotspot = hotspot(
                 UUID.randomUUID(),
@@ -144,7 +147,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldFindHotspotsWithinBoundingBox() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var pageable = PageRequest.of(0, 20);
         var hotspot = hotspot(
                 UUID.randomUUID(),
@@ -168,7 +171,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldCountHotspotsWithinRadiusSinceInstant() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var observedSince = Instant.parse("2026-07-07T00:00:00Z");
 
         when(hotspotRepository.countWithinRadiusSince(-26.9189, -49.0661, 10_000, observedSince))
@@ -181,7 +184,7 @@ class HotspotQueryServiceTest {
 
     @Test
     void shouldCountHotspotsWithinBoundingBoxSinceInstant() {
-        var service = new HotspotQueryService(hotspotRepository);
+        var service = new HotspotQueryService(hotspotRepository, pageRequestFactory);
         var observedSince = Instant.parse("2026-07-07T00:00:00Z");
 
         when(hotspotRepository.countWithinBoundingBoxSince(-27, -26, -50, -49, observedSince))

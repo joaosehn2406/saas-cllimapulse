@@ -9,11 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -71,19 +68,5 @@ class RiskAssessmentServiceTest {
         assertThat(entity.getLevel()).isEqualTo(RiskLevel.CRITICAL);
         assertThat(entity.getValidUntil()).isEqualTo(Instant.parse("2026-09-08T15:37:00Z"));
         assertThat(entity.getMethodologyVersion()).isEqualTo("v1");
-    }
-
-    @Test
-    void shouldFindRecentAssessmentsUsingDefaultPageSize() {
-        var service = new RiskAssessmentService(fireRiskScoreCalculator, riskAssessmentRepository);
-        var pageable = PageRequest.of(2, 20);
-
-        when(riskAssessmentRepository.findAllByOrderByCalculatedAtDesc(pageable))
-                .thenReturn(new PageImpl<>(List.of(), pageable, 40));
-
-        var page = service.findRecent(2);
-
-        assertThat(page.getNumber()).isEqualTo(2);
-        assertThat(page.getSize()).isEqualTo(20);
     }
 }

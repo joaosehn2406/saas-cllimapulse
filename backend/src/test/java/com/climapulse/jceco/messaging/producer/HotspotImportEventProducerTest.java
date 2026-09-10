@@ -23,7 +23,8 @@ class HotspotImportEventProducerTest {
     private KafkaTemplate<String, String> kafkaTemplate;
 
     private final ClimapulseKafkaProperties properties = new ClimapulseKafkaProperties(
-            "climate.hotspot.imported.v1"
+            "climate.hotspot.imported.v1",
+            "climate.alert.created.v1"
     );
     private final Clock clock = Clock.fixed(Instant.parse("2026-09-08T14:37:00Z"), ZoneOffset.UTC);
 
