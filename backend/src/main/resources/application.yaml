@@ -62,7 +62,11 @@ climapulse:
     alert-created-topic: climate.alert.created.v1
 
   risk:
-    monitored-areas: []
+    monitored-areas:
+      - name: Blumenau
+        latitude: -26.9189
+        longitude: -49.0661
+        radius-meters: 10000
 
 server:
   port: 8080
