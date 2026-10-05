@@ -5,8 +5,8 @@ import com.climapulse.jceco.integration.openmeteo.model.OpenMeteoForecastRespons
 import com.climapulse.jceco.integration.openmeteo.model.OpenMeteoHourlyResponse;
 import com.climapulse.jceco.shared.exception.InvalidCoordinateException;
 import com.climapulse.jceco.weather.config.WeatherProperties;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotRepository;
+import com.climapulse.jceco.weather.persistence.WeatherForecastEntity;
+import com.climapulse.jceco.weather.persistence.WeatherForecastRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -27,101 +27,101 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class WeatherSnapshotServiceTest {
+class WeatherForecastServiceTest {
 
     @Mock
     private OpenMeteoClient openMeteoClient;
 
     @Mock
-    private WeatherSnapshotRepository weatherSnapshotRepository;
+    private WeatherForecastRepository weatherForecastRepository;
 
     @Mock
-    private WeatherSnapshotCache weatherSnapshotCache;
+    private WeatherForecastCache weatherForecastCache;
 
     private final Clock clock = Clock.fixed(Instant.parse("2026-09-08T14:37:00Z"), ZoneOffset.UTC);
-    private final WeatherProperties properties = new WeatherProperties(2, Duration.ofHours(1));
+    private final WeatherProperties properties = new WeatherProperties(Duration.ofHours(1));
 
     @Test
-    void shouldReturnSnapshotFromCacheWhenAvailable() {
-        var snapshot = snapshot(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z"));
+    void shouldReturnForecastFromCacheWhenAvailable() {
+        var forecast = forecastEntity(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z"));
         var service = service();
 
-        when(weatherSnapshotCache.get(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z")))
-                .thenReturn(Optional.of(snapshot));
+        when(weatherForecastCache.get(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z")))
+                .thenReturn(Optional.of(forecast));
 
-        var response = service.getCurrentSnapshot(-26.9189, -49.0661);
+        var response = service.getCurrentForecast(-26.9189, -49.0661);
 
-        assertThat(response).isSameAs(snapshot);
-        verifyNoInteractions(weatherSnapshotRepository, openMeteoClient);
+        assertThat(response).isSameAs(forecast);
+        verifyNoInteractions(weatherForecastRepository, openMeteoClient);
     }
 
     @Test
-    void shouldReturnPersistedSnapshotAndRefreshCacheWhenCacheMisses() {
-        var snapshot = snapshot(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z"));
+    void shouldReturnPersistedForecastAndRefreshCacheWhenCacheMisses() {
+        var forecast = forecastEntity(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z"));
         var service = service();
 
-        when(weatherSnapshotCache.get(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z")))
+        when(weatherForecastCache.get(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z")))
                 .thenReturn(Optional.empty());
-        when(weatherSnapshotRepository
+        when(weatherForecastRepository
                 .findFirstByLatitudeAndLongitudeAndForecastTimeAndCollectedAtGreaterThanEqualAndSourceOrderByCollectedAtDesc(
-                        -26.92,
-                        -49.07,
+                        -26.9189,
+                        -49.0661,
                         Instant.parse("2026-09-08T14:00:00Z"),
                         Instant.parse("2026-09-08T13:37:00Z"),
                         "OPEN_METEO"
                 ))
-                .thenReturn(Optional.of(snapshot));
+                .thenReturn(Optional.of(forecast));
 
-        var response = service.getCurrentSnapshot(-26.9189, -49.0661);
+        var response = service.getCurrentForecast(-26.9189, -49.0661);
 
-        assertThat(response).isSameAs(snapshot);
-        verify(weatherSnapshotCache).put(snapshot);
+        assertThat(response).isSameAs(forecast);
+        verify(weatherForecastCache).put(forecast);
         verifyNoInteractions(openMeteoClient);
     }
 
     @Test
-    void shouldFetchForecastAndSaveSnapshotWhenCacheAndDatabaseMiss() {
+    void shouldFetchAndSaveForecastWhenCacheAndDatabaseMiss() {
         var forecast = forecast();
-        var savedSnapshot = snapshot(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z"));
+        var savedForecast = forecastEntity(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z"));
         var service = service();
 
-        when(weatherSnapshotCache.get(-26.92, -49.07, Instant.parse("2026-09-08T14:00:00Z")))
+        when(weatherForecastCache.get(-26.9189, -49.0661, Instant.parse("2026-09-08T14:00:00Z")))
                 .thenReturn(Optional.empty());
-        when(weatherSnapshotRepository
+        when(weatherForecastRepository
                 .findFirstByLatitudeAndLongitudeAndForecastTimeAndCollectedAtGreaterThanEqualAndSourceOrderByCollectedAtDesc(
-                        -26.92,
-                        -49.07,
+                        -26.9189,
+                        -49.0661,
                         Instant.parse("2026-09-08T14:00:00Z"),
                         Instant.parse("2026-09-08T13:37:00Z"),
                         "OPEN_METEO"
                 ))
                 .thenReturn(Optional.empty());
-        when(openMeteoClient.fetchForecast(-26.92, -49.07)).thenReturn(forecast);
-        when(weatherSnapshotRepository.save(org.mockito.ArgumentMatchers.any(WeatherSnapshotEntity.class)))
-                .thenReturn(savedSnapshot);
+        when(openMeteoClient.fetchForecast(-26.9189, -49.0661)).thenReturn(forecast);
+        when(weatherForecastRepository.save(org.mockito.ArgumentMatchers.any(WeatherForecastEntity.class)))
+                .thenReturn(savedForecast);
 
-        var response = service.getCurrentSnapshot(-26.9189, -49.0661);
+        var response = service.getCurrentForecast(-26.9189, -49.0661);
 
-        assertThat(response).isSameAs(savedSnapshot);
-        verify(openMeteoClient).fetchForecast(-26.92, -49.07);
-        verify(weatherSnapshotCache).put(savedSnapshot);
+        assertThat(response).isSameAs(savedForecast);
+        verify(openMeteoClient).fetchForecast(-26.9189, -49.0661);
+        verify(weatherForecastCache).put(savedForecast);
     }
 
     @Test
     void shouldRejectInvalidCoordinates() {
         var service = service();
 
-        assertThatThrownBy(() -> service.getCurrentSnapshot(-91, -49.0661))
+        assertThatThrownBy(() -> service.getCurrentForecast(-91, -49.0661))
                 .isInstanceOf(InvalidCoordinateException.class);
 
-        verifyNoInteractions(weatherSnapshotCache, weatherSnapshotRepository, openMeteoClient);
+        verifyNoInteractions(weatherForecastCache, weatherForecastRepository, openMeteoClient);
     }
 
-    private WeatherSnapshotService service() {
-        return new WeatherSnapshotService(
+    private WeatherForecastService service() {
+        return new WeatherForecastService(
                 openMeteoClient,
-                weatherSnapshotRepository,
-                weatherSnapshotCache,
+                weatherForecastRepository,
+                weatherForecastCache,
                 properties,
                 clock
         );
@@ -152,8 +152,8 @@ class WeatherSnapshotServiceTest {
         );
     }
 
-    private WeatherSnapshotEntity snapshot(double latitude, double longitude, Instant forecastTime) {
-        return new WeatherSnapshotEntity(
+    private WeatherForecastEntity forecastEntity(double latitude, double longitude, Instant forecastTime) {
+        return new WeatherForecastEntity(
                 latitude,
                 longitude,
                 forecastTime,

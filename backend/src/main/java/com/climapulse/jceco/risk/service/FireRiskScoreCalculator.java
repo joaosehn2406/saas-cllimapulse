@@ -3,8 +3,8 @@ package com.climapulse.jceco.risk.service;
 import com.climapulse.jceco.hotspot.service.HotspotQueryService;
 import com.climapulse.jceco.risk.model.FireRiskAssessment;
 import com.climapulse.jceco.risk.model.RiskLevel;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
-import com.climapulse.jceco.weather.service.WeatherSnapshotService;
+import com.climapulse.jceco.weather.persistence.WeatherForecastEntity;
+import com.climapulse.jceco.weather.service.WeatherForecastService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,24 +22,24 @@ public class FireRiskScoreCalculator {
     private static final long HOTSPOT_ANALYSIS_HOURS = 24;
 
     private final HotspotQueryService hotspotQueryService;
-    private final WeatherSnapshotService weatherSnapshotService;
+    private final WeatherForecastService weatherForecastService;
     private final Clock clock;
 
     @Autowired
     public FireRiskScoreCalculator(
             HotspotQueryService hotspotQueryService,
-            WeatherSnapshotService weatherSnapshotService
+            WeatherForecastService weatherForecastService
     ) {
-        this(hotspotQueryService, weatherSnapshotService, Clock.systemUTC());
+        this(hotspotQueryService, weatherForecastService, Clock.systemUTC());
     }
 
     FireRiskScoreCalculator(
             HotspotQueryService hotspotQueryService,
-            WeatherSnapshotService weatherSnapshotService,
+            WeatherForecastService weatherForecastService,
             Clock clock
     ) {
         this.hotspotQueryService = hotspotQueryService;
-        this.weatherSnapshotService = weatherSnapshotService;
+        this.weatherForecastService = weatherForecastService;
         this.clock = clock;
     }
 
@@ -54,14 +54,14 @@ public class FireRiskScoreCalculator {
                 observedSince
         );
 
-        WeatherSnapshotEntity weatherSnapshot = weatherSnapshotService.getCurrentSnapshot(latitude, longitude);
+        WeatherForecastEntity weatherForecast = weatherForecastService.getCurrentForecast(latitude, longitude);
 
         double hotspotFactor = hotspotFactor(recentHotspotCount);
-        Double humidityFactor = humidityFactor(weatherSnapshot.getRelativeHumidity());
+        Double humidityFactor = humidityFactor(weatherForecast.getRelativeHumidity());
         Double dryDaysFactor = null;
         Double noRainForecastFactor = noRainForecastFactor(
-                weatherSnapshot.getPrecipitationMm(),
-                weatherSnapshot.getPrecipitationProbability()
+                weatherForecast.getPrecipitationMm(),
+                weatherForecast.getPrecipitationProbability()
         );
 
         int score = weightedScore(hotspotFactor, humidityFactor, dryDaysFactor, noRainForecastFactor);

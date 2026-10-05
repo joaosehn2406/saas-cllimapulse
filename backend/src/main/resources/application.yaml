@@ -55,8 +55,7 @@ climapulse:
     past-hours: 1
 
   weather:
-    coordinate-scale: 2
-    snapshot-ttl: 1h
+    forecast-ttl: 1h
 
   kafka:
     hotspot-import-completed-topic: climate.hotspot.imported.v1

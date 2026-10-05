@@ -11,8 +11,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "weather_snapshot", schema = "climapulse")
-public class WeatherSnapshotEntity {
+@Table(name = "weather_forecast", schema = "climapulse")
+public class WeatherForecastEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -57,10 +57,10 @@ public class WeatherSnapshotEntity {
     @Column(nullable = false, length = 40)
     private String source;
 
-    protected WeatherSnapshotEntity() {
+    protected WeatherForecastEntity() {
     }
 
-    public WeatherSnapshotEntity(
+    public WeatherForecastEntity(
             double latitude,
             double longitude,
             Instant forecastTime,

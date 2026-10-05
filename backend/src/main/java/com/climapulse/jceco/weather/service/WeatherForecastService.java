@@ -6,13 +6,11 @@ import com.climapulse.jceco.integration.openmeteo.model.OpenMeteoHourlyResponse;
 import com.climapulse.jceco.shared.exception.InvalidCoordinateException;
 import com.climapulse.jceco.shared.exception.OpenMeteoClientException;
 import com.climapulse.jceco.weather.config.WeatherProperties;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotRepository;
+import com.climapulse.jceco.weather.persistence.WeatherForecastEntity;
+import com.climapulse.jceco.weather.persistence.WeatherForecastRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,61 +19,59 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-public class WeatherSnapshotService {
+public class WeatherForecastService {
 
     private static final String SOURCE = "OPEN_METEO";
 
     private final OpenMeteoClient openMeteoClient;
-    private final WeatherSnapshotRepository weatherSnapshotRepository;
-    private final WeatherSnapshotCache weatherSnapshotCache;
+    private final WeatherForecastRepository weatherForecastRepository;
+    private final WeatherForecastCache weatherForecastCache;
     private final WeatherProperties properties;
     private final Clock clock;
 
     @Autowired
-    public WeatherSnapshotService(
+    public WeatherForecastService(
             OpenMeteoClient openMeteoClient,
-            WeatherSnapshotRepository weatherSnapshotRepository,
-            WeatherSnapshotCache weatherSnapshotCache,
+            WeatherForecastRepository weatherForecastRepository,
+            WeatherForecastCache weatherForecastCache,
             WeatherProperties properties
     ) {
-        this(openMeteoClient, weatherSnapshotRepository, weatherSnapshotCache, properties, Clock.systemUTC());
+        this(openMeteoClient, weatherForecastRepository, weatherForecastCache, properties, Clock.systemUTC());
     }
 
-    WeatherSnapshotService(
+    WeatherForecastService(
             OpenMeteoClient openMeteoClient,
-            WeatherSnapshotRepository weatherSnapshotRepository,
-            WeatherSnapshotCache weatherSnapshotCache,
+            WeatherForecastRepository weatherForecastRepository,
+            WeatherForecastCache weatherForecastCache,
             WeatherProperties properties,
             Clock clock
     ) {
         this.openMeteoClient = openMeteoClient;
-        this.weatherSnapshotRepository = weatherSnapshotRepository;
-        this.weatherSnapshotCache = weatherSnapshotCache;
+        this.weatherForecastRepository = weatherForecastRepository;
+        this.weatherForecastCache = weatherForecastCache;
         this.properties = properties;
         this.clock = clock;
     }
 
-    public WeatherSnapshotEntity getCurrentSnapshot(double latitude, double longitude) {
+    public WeatherForecastEntity getCurrentForecast(double latitude, double longitude) {
         validateCoordinate(latitude, longitude);
 
-        double roundedLatitude = round(latitude);
-        double roundedLongitude = round(longitude);
         Instant now = clock.instant();
         Instant forecastTime = now.truncatedTo(ChronoUnit.HOURS);
-        Instant collectedAfter = now.minus(properties.snapshotTtl());
+        Instant collectedAfter = now.minus(properties.forecastTtl());
 
-        return weatherSnapshotCache.get(roundedLatitude, roundedLongitude, forecastTime)
-                .or(() -> findPersistedSnapshot(roundedLatitude, roundedLongitude, forecastTime, collectedAfter))
-                .orElseGet(() -> fetchAndSaveSnapshot(roundedLatitude, roundedLongitude, forecastTime, now));
+        return weatherForecastCache.get(latitude, longitude, forecastTime)
+                .or(() -> findPersistedForecast(latitude, longitude, forecastTime, collectedAfter))
+                .orElseGet(() -> fetchAndSaveForecast(latitude, longitude, forecastTime, now));
     }
 
-    private java.util.Optional<WeatherSnapshotEntity> findPersistedSnapshot(
+    private java.util.Optional<WeatherForecastEntity> findPersistedForecast(
             double latitude,
             double longitude,
             Instant forecastTime,
             Instant collectedAfter
     ) {
-        var snapshot = weatherSnapshotRepository
+        var forecast = weatherForecastRepository
                 .findFirstByLatitudeAndLongitudeAndForecastTimeAndCollectedAtGreaterThanEqualAndSourceOrderByCollectedAtDesc(
                         latitude,
                         longitude,
@@ -84,34 +80,34 @@ public class WeatherSnapshotService {
                         SOURCE
                 );
 
-        snapshot.ifPresent(weatherSnapshotCache::put);
+        forecast.ifPresent(weatherForecastCache::put);
 
-        return snapshot;
+        return forecast;
     }
 
-    private WeatherSnapshotEntity fetchAndSaveSnapshot(
+    private WeatherForecastEntity fetchAndSaveForecast(
             double latitude,
             double longitude,
             Instant preferredForecastTime,
             Instant collectedAt
     ) {
-        OpenMeteoForecastResponse forecast = openMeteoClient.fetchForecast(latitude, longitude);
-        WeatherSnapshotEntity snapshot = toSnapshot(latitude, longitude, preferredForecastTime, collectedAt, forecast);
-        WeatherSnapshotEntity savedSnapshot = weatherSnapshotRepository.save(snapshot);
+        OpenMeteoForecastResponse response = openMeteoClient.fetchForecast(latitude, longitude);
+        WeatherForecastEntity forecast = toForecast(latitude, longitude, preferredForecastTime, collectedAt, response);
+        WeatherForecastEntity savedForecast = weatherForecastRepository.save(forecast);
 
-        weatherSnapshotCache.put(savedSnapshot);
+        weatherForecastCache.put(savedForecast);
 
-        return savedSnapshot;
+        return savedForecast;
     }
 
-    private WeatherSnapshotEntity toSnapshot(
+    private WeatherForecastEntity toForecast(
             double latitude,
             double longitude,
             Instant preferredForecastTime,
             Instant collectedAt,
-            OpenMeteoForecastResponse forecast
+            OpenMeteoForecastResponse response
     ) {
-        OpenMeteoHourlyResponse hourly = forecast.hourly();
+        OpenMeteoHourlyResponse hourly = response.hourly();
 
         if (hourly == null || hourly.time() == null || hourly.time().isEmpty()) {
             throw new OpenMeteoClientException("Open-Meteo returned forecast without hourly data");
@@ -120,7 +116,7 @@ public class WeatherSnapshotService {
         int index = resolveForecastIndex(hourly.time(), preferredForecastTime);
         Instant forecastTime = hourly.time().get(index).toInstant(ZoneOffset.UTC);
 
-        return new WeatherSnapshotEntity(
+        return new WeatherForecastEntity(
                 latitude,
                 longitude,
                 forecastTime,
@@ -155,12 +151,6 @@ public class WeatherSnapshotService {
         }
 
         return values.get(index);
-    }
-
-    private double round(double value) {
-        return BigDecimal.valueOf(value)
-                .setScale(properties.coordinateScale(), RoundingMode.HALF_UP)
-                .doubleValue();
     }
 
     private void validateCoordinate(double latitude, double longitude) {

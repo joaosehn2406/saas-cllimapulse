@@ -2,8 +2,8 @@ package com.climapulse.jceco.risk.service;
 
 import com.climapulse.jceco.hotspot.service.HotspotQueryService;
 import com.climapulse.jceco.risk.model.RiskLevel;
-import com.climapulse.jceco.weather.persistence.WeatherSnapshotEntity;
-import com.climapulse.jceco.weather.service.WeatherSnapshotService;
+import com.climapulse.jceco.weather.persistence.WeatherForecastEntity;
+import com.climapulse.jceco.weather.service.WeatherForecastService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,13 +23,13 @@ class FireRiskScoreCalculatorTest {
     private HotspotQueryService hotspotQueryService;
 
     @Mock
-    private WeatherSnapshotService weatherSnapshotService;
+    private WeatherForecastService weatherForecastService;
 
     private final Clock clock = Clock.fixed(Instant.parse("2026-09-08T14:37:00Z"), ZoneOffset.UTC);
 
     @Test
     void shouldCalculateHighRiskWhenHotspotsAreRecentAndWeatherIsDry() {
-        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherSnapshotService, clock);
+        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherForecastService, clock);
 
         when(hotspotQueryService.countWithinRadiusSince(
                 -26.9189,
@@ -37,8 +37,8 @@ class FireRiskScoreCalculatorTest {
                 10_000,
                 Instant.parse("2026-09-07T14:37:00Z")
         )).thenReturn(8L);
-        when(weatherSnapshotService.getCurrentSnapshot(-26.9189, -49.0661))
-                .thenReturn(snapshot(25.0, 0.0, 5.0));
+        when(weatherForecastService.getCurrentForecast(-26.9189, -49.0661))
+                .thenReturn(forecast(25.0, 0.0, 5.0));
 
         var assessment = calculator.calculate(-26.9189, -49.0661, 10_000);
 
@@ -54,7 +54,7 @@ class FireRiskScoreCalculatorTest {
 
     @Test
     void shouldCalculateLowRiskWhenThereAreFewHotspotsAndHumidityIsHigh() {
-        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherSnapshotService, clock);
+        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherForecastService, clock);
 
         when(hotspotQueryService.countWithinRadiusSince(
                 -26.9189,
@@ -62,8 +62,8 @@ class FireRiskScoreCalculatorTest {
                 10_000,
                 Instant.parse("2026-09-07T14:37:00Z")
         )).thenReturn(1L);
-        when(weatherSnapshotService.getCurrentSnapshot(-26.9189, -49.0661))
-                .thenReturn(snapshot(70.0, 2.0, 90.0));
+        when(weatherForecastService.getCurrentForecast(-26.9189, -49.0661))
+                .thenReturn(forecast(70.0, 2.0, 90.0));
 
         var assessment = calculator.calculate(-26.9189, -49.0661, 10_000);
 
@@ -73,7 +73,7 @@ class FireRiskScoreCalculatorTest {
 
     @Test
     void shouldIgnoreMissingWeatherFactorsInsteadOfTreatingThemAsZero() {
-        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherSnapshotService, clock);
+        var calculator = new FireRiskScoreCalculator(hotspotQueryService, weatherForecastService, clock);
 
         when(hotspotQueryService.countWithinRadiusSince(
                 -26.9189,
@@ -81,8 +81,8 @@ class FireRiskScoreCalculatorTest {
                 10_000,
                 Instant.parse("2026-09-07T14:37:00Z")
         )).thenReturn(3L);
-        when(weatherSnapshotService.getCurrentSnapshot(-26.9189, -49.0661))
-                .thenReturn(snapshot(null, null, null));
+        when(weatherForecastService.getCurrentForecast(-26.9189, -49.0661))
+                .thenReturn(forecast(null, null, null));
 
         var assessment = calculator.calculate(-26.9189, -49.0661, 10_000);
 
@@ -93,12 +93,12 @@ class FireRiskScoreCalculatorTest {
         assertThat(assessment.level()).isEqualTo(RiskLevel.LOW);
     }
 
-    private WeatherSnapshotEntity snapshot(
+    private WeatherForecastEntity forecast(
             Double relativeHumidity,
             Double precipitationMm,
             Double precipitationProbability
     ) {
-        return new WeatherSnapshotEntity(
+        return new WeatherForecastEntity(
                 -26.92,
                 -49.07,
                 Instant.parse("2026-09-08T14:00:00Z"),

@@ -6,9 +6,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface WeatherSnapshotRepository extends JpaRepository<WeatherSnapshotEntity, UUID> {
+public interface WeatherForecastRepository extends JpaRepository<WeatherForecastEntity, UUID> {
 
-    Optional<WeatherSnapshotEntity> findFirstByLatitudeAndLongitudeAndForecastTimeAndCollectedAtGreaterThanEqualAndSourceOrderByCollectedAtDesc(
+    Optional<WeatherForecastEntity> findFirstByLatitudeAndLongitudeAndForecastTimeAndCollectedAtGreaterThanEqualAndSourceOrderByCollectedAtDesc(
             double latitude,
             double longitude,
             Instant forecastTime,
